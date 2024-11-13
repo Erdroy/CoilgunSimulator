@@ -97,6 +97,9 @@ def dUdt(step, previous, dt):
     return [current, voltage, velocity, distance, workSum]
 
 def setup(_data, _desc, _capacitor_value, _capacitor_esr, _fdiode_voltage, _fdiode_resistance, _freewheeling_diode, _initial_conditions):
+def calculate_coil_resistance(_desc):
+    return 1.68e-8 * _desc['CoilData']['WireLength'] / (math.pi * ((_desc['CoilData']['WireDiameter'] * 0.5) / 1000.0) ** 2)
+
     global data, desc
     global capacitor_value, capacitor_esr, fdiode_voltage, fdiode_resistance, freewheeling_diode
     global coil_resistance, projectile_mass
@@ -113,7 +116,7 @@ def setup(_data, _desc, _capacitor_value, _capacitor_esr, _fdiode_voltage, _fdio
 
     initial_conditions = _initial_conditions
 
-    coil_resistance = desc['CoilData']['Resistance']
+    coil_resistance = desc['CoilData']['Resistance'] ##calculate_coil_resistance(_desc)
     projectile_mass = desc['ProjectileData']['Mass'] / 1000
 
     pass
