@@ -10,11 +10,12 @@ RF = 4.7            # Ohms (Resistance of the flyback diode)
 VF = 0.7            # Volts (Forward voltage drop of the flyback diode)
 DIODE = True        # If we have a flyback diode or not
 
+# TODO: Constant current instead of capacitor
+# TODO: FET/IGBT-based switching
+# TODO: FET/IGBT-based half-bridge switching with energy recovery
+
 STEP_TIME = 0.1e-5  # Step time (s)
 SIM_TIME = 5e-3   # Total simulation time (s)
-
-# TODO: IGBT-based switching
-# TODO: IGBT-based half-bridge switching with energy recovery
 
 def draw(time, results):
     # Plot the results
@@ -69,7 +70,7 @@ def main():
     data, desc = cgutil.load_cgdata('%.1f_C%dx%dT-P%.1fx%d' % (CW, CL, CT, PD, PL))
 
     # Setup and simulate
-    cgsim.setup(data, desc, C, ESR, VF, RF, DIODE, [0, V0, VP0, D0, 0])
+    cgsim.setup(0, data, desc, C, ESR, VF, RF, DIODE, [0, V0, VP0, D0, 0])
     results = cgsim.simulate(time, STEP_TIME) # i(0) = 0 A, V_c(0) = V0 V, v=0m/s, d=distance, W=0J
 
     # Get peak currents, voltages and get final velocity
@@ -133,16 +134,18 @@ def main_sweep():
             data, desc = cgutil.load_cgdata('%.1f_C%dx%dT-P%.1fx%d' % (CW, CL, CT, PD, PL))
 
             # Setup and simulate
-            cgsim.setup(data, desc, C, ESR, VF, RF, DIODE, [0, V0, VP0, D, 0])
+            cgsim.setup(0, data, desc, C, ESR, VF, RF, DIODE, [0, V0, VP0, D, 0])
             results = cgsim.simulate(time, STEP_TIME) # i(0) = 0 A, V_c(0) = V0 V, v=0m/s, d=distance, W=0J
             velocity = results[len(results) - 1, 2]
 
             if velocity > max_velocity:
                 max_velocity = velocity
                 dist = D - (PL/2 + CL/2)
+                current = results[len(results) - 1, 0]
+                leftover_voltage = results[len(results) - 1, 1]
                 best_parameters = {'dist': dist, 'cdist' : D, 'CL': CL, 'CT': CT}
 
-    print('\nHighest Velocity: %.1f (dV=%.1f) m/s' % (max_velocity, max_velocity - VP0))
+    print('\nHighest Velocity: %.1f (dV=%.1f) m/s @ %.1fA left: %.1fV' % (max_velocity, max_velocity - VP0, current, leftover_voltage))
     print(f"Best Parameters: {best_parameters}")
     pass
 
